@@ -30,9 +30,26 @@ const TOOLS: Tool[] = [
       properties: {
         language: {
           type: 'string',
-          enum: ['javascript', 'js', 'typescript', 'ts', 'python', 'py',
-                 'shell', 'bash', 'sh', 'ruby', 'rb', 'go', 'rust', 'rs',
-                 'php', 'perl', 'pl', 'r'],
+          enum: [
+            'javascript',
+            'js',
+            'typescript',
+            'ts',
+            'python',
+            'py',
+            'shell',
+            'bash',
+            'sh',
+            'ruby',
+            'rb',
+            'go',
+            'rust',
+            'rs',
+            'php',
+            'perl',
+            'pl',
+            'r',
+          ],
           description: 'Programming language or shell to use for execution.',
         },
         code: {
@@ -41,7 +58,8 @@ const TOOLS: Tool[] = [
         },
         intent: {
           type: 'string',
-          description: 'Optional: describe what you are looking for in the output. Large outputs will be filtered to match this intent.',
+          description:
+            'Optional: describe what you are looking for in the output. Large outputs will be filtered to match this intent.',
         },
         timeout: {
           type: 'number',
@@ -107,7 +125,8 @@ const TOOLS: Tool[] = [
         },
         kb_name: {
           type: 'string',
-          description: 'Knowledge base name. Default: "default". Use different names to separate content domains.',
+          description:
+            'Knowledge base name. Default: "default". Use different names to separate content domains.',
         },
         chunk_size: {
           type: 'number',
@@ -242,7 +261,7 @@ const TOOLS: Tool[] = [
   },
 ];
 
-export async function createServer(): Promise<{ server: Server; transport: StdioServerTransport }> {
+export function createServer(): { server: Server; transport: StdioServerTransport } {
   const server = new Server(
     {
       name: 'universal-context-mode',
@@ -256,19 +275,17 @@ export async function createServer(): Promise<{ server: Server; transport: Stdio
   );
 
   // List tools
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: TOOLS,
-  }));
+  server.setRequestHandler(ListToolsRequestSchema, () => Promise.resolve({ tools: TOOLS }));
 
   // Handle tool calls
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async request => {
     const { name, arguments: args } = request.params;
     logger.debug('Tool called', { name, args });
 
     try {
       let result: string;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       const typedArgs = (args ?? {}) as any;
       switch (name) {
         case 'execute':
@@ -287,7 +304,7 @@ export async function createServer(): Promise<{ server: Server; transport: Stdio
           result = await fetchAndIndexTool(typedArgs as Parameters<typeof fetchAndIndexTool>[0]);
           break;
         case 'compress':
-          result = await compressTool(typedArgs as Parameters<typeof compressTool>[0]);
+          result = compressTool(typedArgs as Parameters<typeof compressTool>[0]);
           break;
         case 'proxy':
           result = await proxyTool(typedArgs as Parameters<typeof proxyTool>[0]);

@@ -9,7 +9,7 @@ export interface CompressToolInput {
   max_output_tokens?: number;
 }
 
-export async function compressTool(input: CompressToolInput): Promise<string> {
+export function compressTool(input: CompressToolInput): string {
   const maxChars = input.max_output_tokens
     ? input.max_output_tokens * 4
     : DEFAULT_CONFIG.compression.maxOutputBytes;
@@ -30,8 +30,8 @@ export async function compressTool(input: CompressToolInput): Promise<string> {
     '',
     '---',
     `[context-mode] ${result.contentType} content compressed: ` +
-    `${Math.round(result.inputChars / 1024)}KB → ${Math.round(result.outputChars / 1024)}KB ` +
-    `(${result.savedPercent}% saved, strategy: ${result.strategy})`,
+      `${Math.round(result.inputChars / 1024)}KB → ${Math.round(result.outputChars / 1024)}KB ` +
+      `(${result.savedPercent}% saved, strategy: ${result.strategy})`,
   ].join('\n');
 
   return result.output + footer;

@@ -1,10 +1,10 @@
 export interface ContextModeConfig {
   compression: {
-    thresholdBytes: number;       // Don't compress below this size
-    maxOutputBytes: number;       // Target max output size
+    thresholdBytes: number; // Don't compress below this size
+    maxOutputBytes: number; // Target max output size
     defaultStrategy: 'auto' | 'truncate' | 'summarize' | 'filter';
-    headLines: number;            // Lines to keep from start (generic truncate)
-    tailLines: number;            // Lines to keep from end (generic truncate)
+    headLines: number; // Lines to keep from start (generic truncate)
+    tailLines: number; // Lines to keep from end (generic truncate)
   };
   sandbox: {
     timeoutMs: number;
@@ -12,10 +12,10 @@ export interface ContextModeConfig {
     preferBun: boolean;
   };
   knowledgeBase: {
-    dbPath: string;               // Will be set to OS temp by default
-    maxChunkSize: number;         // Max chars per chunk
-    chunkOverlap: number;         // Overlap between chunks
-    searchTopK: number;           // Default search results
+    dbPath: string; // Will be set to OS temp by default
+    maxChunkSize: number; // Max chars per chunk
+    chunkOverlap: number; // Overlap between chunks
+    searchTopK: number; // Default search results
   };
   logging: {
     level: 'debug' | 'info' | 'warn' | 'error';
@@ -27,8 +27,8 @@ import { join } from 'path';
 
 export const DEFAULT_CONFIG: ContextModeConfig = {
   compression: {
-    thresholdBytes: 5 * 1024,     // 5KB
-    maxOutputBytes: 8 * 1024,     // 8KB target output
+    thresholdBytes: 5 * 1024, // 5KB
+    maxOutputBytes: 8 * 1024, // 8KB target output
     defaultStrategy: 'auto',
     headLines: 50,
     tailLines: 20,

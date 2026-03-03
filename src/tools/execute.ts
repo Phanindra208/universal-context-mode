@@ -26,7 +26,8 @@ export async function executeTool(input: ExecuteToolInput): Promise<string> {
   }
 
   if (result.timedOut) {
-    rawOutput = `[TIMEOUT after ${input.timeout ?? DEFAULT_CONFIG.sandbox.timeoutMs}ms]\n` + rawOutput;
+    rawOutput =
+      `[TIMEOUT after ${input.timeout ?? DEFAULT_CONFIG.sandbox.timeoutMs}ms]\n` + rawOutput;
   }
 
   if (result.exitCode !== 0 && !result.timedOut) {
@@ -45,7 +46,10 @@ export async function executeTool(input: ExecuteToolInput): Promise<string> {
 
   if (compressed.strategy !== 'as-is') {
     statsTracker.record('execute', rawOutput, compressed.output, compressed.strategy);
-    return compressed.output + statsTracker.formatStatsFooter(rawOutput, compressed.output, compressed.strategy);
+    return (
+      compressed.output +
+      statsTracker.formatStatsFooter(rawOutput, compressed.output, compressed.strategy)
+    );
   }
 
   return compressed.output;

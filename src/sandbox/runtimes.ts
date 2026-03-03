@@ -1,15 +1,23 @@
 import { execFileSync } from 'child_process';
 
 export type Language =
-  | 'javascript' | 'js'
-  | 'typescript' | 'ts'
-  | 'python' | 'py'
-  | 'shell' | 'bash' | 'sh'
-  | 'ruby' | 'rb'
+  | 'javascript'
+  | 'js'
+  | 'typescript'
+  | 'ts'
+  | 'python'
+  | 'py'
+  | 'shell'
+  | 'bash'
+  | 'sh'
+  | 'ruby'
+  | 'rb'
   | 'go'
-  | 'rust' | 'rs'
+  | 'rust'
+  | 'rs'
   | 'php'
-  | 'perl' | 'pl'
+  | 'perl'
+  | 'pl'
   | 'r';
 
 export interface Runtime {
@@ -44,112 +52,112 @@ export const RUNTIMES: Runtime[] = [
   {
     language: 'javascript',
     command: bunAvailable ? 'bun' : 'node',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'js',
     available: bunAvailable || isAvailable('node'),
   },
   {
     language: 'js',
     command: bunAvailable ? 'bun' : 'node',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'js',
     available: bunAvailable || isAvailable('node'),
   },
   {
     language: 'typescript',
     command: bunAvailable ? 'bun' : 'tsx',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'ts',
     available: bunAvailable || isAvailable('tsx'),
   },
   {
     language: 'ts',
     command: bunAvailable ? 'bun' : 'tsx',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'ts',
     available: bunAvailable || isAvailable('tsx'),
   },
   {
     language: 'python',
     command: 'python3',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'py',
     available: isAvailable('python3') || isAvailable('python'),
   },
   {
     language: 'py',
     command: 'python3',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'py',
     available: isAvailable('python3'),
   },
   {
     language: 'shell',
     command: 'bash',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'sh',
     available: isAvailable('bash'),
   },
   {
     language: 'bash',
     command: 'bash',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'sh',
     available: isAvailable('bash'),
   },
   {
     language: 'sh',
     command: 'sh',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'sh',
     available: true, // sh is nearly always available
   },
   {
     language: 'ruby',
     command: 'ruby',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'rb',
     available: isAvailable('ruby'),
   },
   {
     language: 'rb',
     command: 'ruby',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'rb',
     available: isAvailable('ruby'),
   },
   {
     language: 'go',
     command: 'go',
-    args: (f) => ['run', f],
+    args: f => ['run', f],
     extension: 'go',
     available: isAvailable('go'),
   },
   {
     language: 'php',
     command: 'php',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'php',
     available: isAvailable('php'),
   },
   {
     language: 'perl',
     command: 'perl',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'pl',
     available: isAvailable('perl'),
   },
   {
     language: 'pl',
     command: 'perl',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'pl',
     available: isAvailable('perl'),
   },
   {
     language: 'r',
     command: 'Rscript',
-    args: (f) => [f],
+    args: f => [f],
     extension: 'r',
     available: isAvailable('Rscript'),
   },

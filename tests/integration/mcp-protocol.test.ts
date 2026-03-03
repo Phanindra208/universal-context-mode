@@ -5,17 +5,12 @@ import { createServer } from '../../src/server.js';
 
 describe('MCP Protocol Compliance', () => {
   let client: Client;
-  let serverTransport: ReturnType<typeof InMemoryTransport.createLinkedPair>[0];
 
   beforeAll(async () => {
-    const { server } = await createServer();
+    const { server } = createServer();
     const [ct, st] = InMemoryTransport.createLinkedPair();
-    serverTransport = st;
 
-    client = new Client(
-      { name: 'test-client', version: '1.0.0' },
-      { capabilities: { tools: {} } }
-    );
+    client = new Client({ name: 'test-client', version: '1.0.0' }, { capabilities: { tools: {} } });
 
     await server.connect(st);
     await client.connect(ct);
@@ -69,7 +64,9 @@ describe('MCP Protocol Compliance', () => {
     // Use a larger array to ensure compression kicks in (well above 5KB threshold)
     const largeContent = JSON.stringify(
       Array.from({ length: 500 }, (_, i) => ({
-        id: i, name: `Item ${i}`, value: i * 10,
+        id: i,
+        name: `Item ${i}`,
+        value: i * 10,
         description: `Description for item number ${i} with extra padding`,
       }))
     );

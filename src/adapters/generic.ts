@@ -31,10 +31,12 @@ export async function runSetup(ideHint?: string): Promise<void> {
 
   if (ideHint) {
     const hint = ideHint.toLowerCase();
-    adapter = ADAPTERS.find(a =>
-      a.ideName.toLowerCase().includes(hint) ||
-      hint.includes(a.ideName.toLowerCase().split(' ')[0]?.toLowerCase() ?? '')
-    ) ?? null;
+    adapter =
+      ADAPTERS.find(
+        a =>
+          a.ideName.toLowerCase().includes(hint) ||
+          hint.includes(a.ideName.toLowerCase().split(' ')[0]?.toLowerCase() ?? '')
+      ) ?? null;
 
     if (!adapter) {
       console.error(`Unknown IDE: "${ideHint}"`);

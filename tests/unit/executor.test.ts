@@ -72,7 +72,10 @@ describe('executeCode', () => {
 
   it('throws for unavailable runtime', async () => {
     await expect(
-      executeCode({ language: 'rust' as Parameters<typeof executeCode>[0]['language'], code: 'fn main() {}' })
+      executeCode({
+        language: 'rust' as Parameters<typeof executeCode>[0]['language'],
+        code: 'fn main() {}',
+      })
     ).rejects.toThrow(/not available/);
   });
 

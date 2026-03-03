@@ -2,14 +2,19 @@ import { type BaseAdapter, type AdapterConfig, type SetupResult } from './base-a
 import { access, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 
-const MCP_CONFIG = (pkg: string) => JSON.stringify({
-  mcpServers: {
-    'context-mode': {
-      command: 'npx',
-      args: ['-y', pkg],
+const MCP_CONFIG = (pkg: string) =>
+  JSON.stringify(
+    {
+      mcpServers: {
+        'context-mode': {
+          command: 'npx',
+          args: ['-y', pkg],
+        },
+      },
     },
-  },
-}, null, 2);
+    null,
+    2
+  );
 
 const CASCADE_RULES = `# Context Mode Rules for Windsurf Cascade
 

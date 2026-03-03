@@ -18,8 +18,7 @@ export function estimateTokens(text: string): TokenEstimate {
 
   // Detect if content is primarily code
   const codeIndicators = ['{', '}', '=>', '::', '()', '[]', '#!/'];
-  const isCodeHeavy =
-    codeIndicators.filter(ind => text.includes(ind)).length >= 3;
+  const isCodeHeavy = codeIndicators.filter(ind => text.includes(ind)).length >= 3;
 
   const charsPerToken = isCodeHeavy ? CODE_CHARS_PER_TOKEN : AVG_CHARS_PER_TOKEN;
   const tokens = Math.ceil(characters / charsPerToken);

@@ -9,13 +9,11 @@ export interface FetchAndIndexToolInput {
 }
 
 async function fetchAndConvertToMarkdown(url: string): Promise<string> {
-  let htmlContent: string;
-
   // Use built-in fetch (Node 18+)
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'universal-context-mode/0.1.0 (MCP Server)',
-      'Accept': 'text/html,application/xhtml+xml,text/plain',
+      Accept: 'text/html,application/xhtml+xml,text/plain',
     },
     signal: AbortSignal.timeout(15_000),
   });
@@ -30,7 +28,7 @@ async function fetchAndConvertToMarkdown(url: string): Promise<string> {
     return await response.text();
   }
 
-  htmlContent = await response.text();
+  const htmlContent = await response.text();
 
   // Convert HTML to Markdown using turndown (no JSDOM dependency)
   try {

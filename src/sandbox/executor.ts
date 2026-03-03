@@ -36,7 +36,7 @@ export async function executeCode(options: ExecuteOptions): Promise<ExecuteResul
   if (!runtime) {
     throw new Error(
       `Runtime for language "${language}" is not available. ` +
-      `Make sure the required interpreter is installed.`
+        `Make sure the required interpreter is installed.`
     );
   }
 
@@ -48,7 +48,7 @@ export async function executeCode(options: ExecuteOptions): Promise<ExecuteResul
     await writeFile(filePath, code, 'utf8');
 
     // Build command with memory limit for Node.js runtimes
-    let command = runtime.command;
+    const command = runtime.command;
     let args = runtime.args(filePath);
 
     if (command === 'node' && memoryMB) {
@@ -73,7 +73,12 @@ export async function executeCode(options: ExecuteOptions): Promise<ExecuteResul
       stdout = result.stdout;
       stderr = result.stderr;
     } catch (err: unknown) {
-      const execError = err as { stdout?: string; stderr?: string; killed?: boolean; code?: number };
+      const execError = err as {
+        stdout?: string;
+        stderr?: string;
+        killed?: boolean;
+        code?: number;
+      };
       stdout = execError.stdout ?? '';
       stderr = execError.stderr ?? '';
       timedOut = execError.killed ?? false;

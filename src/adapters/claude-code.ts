@@ -16,6 +16,7 @@ export class ClaudeCodeAdapter implements BaseAdapter {
   }
 
   async setup(config: AdapterConfig): Promise<SetupResult> {
+    await Promise.resolve();
     const filesCreated: string[] = [];
 
     // Claude Code uses CLI to add MCP servers

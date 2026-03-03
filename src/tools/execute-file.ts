@@ -33,7 +33,10 @@ export async function executeFileTool(input: ExecuteFileToolInput): Promise<stri
 
   if (compressed.strategy !== 'as-is') {
     statsTracker.record('execute_file', rawOutput, compressed.output, compressed.strategy);
-    return compressed.output + statsTracker.formatStatsFooter(rawOutput, compressed.output, compressed.strategy);
+    return (
+      compressed.output +
+      statsTracker.formatStatsFooter(rawOutput, compressed.output, compressed.strategy)
+    );
   }
 
   return compressed.output;

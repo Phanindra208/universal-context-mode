@@ -35,8 +35,10 @@ export async function proxyTool(input: ProxyToolInput): Promise<string> {
     case 'execute':
     case 'bash': {
       const lang = (input.args['language'] as Language | undefined) ?? 'shell';
-      const code = (input.args['code'] as string | undefined) ??
-        (input.args['command'] as string | undefined) ?? '';
+      const code =
+        (input.args['code'] as string | undefined) ??
+        (input.args['command'] as string | undefined) ??
+        '';
 
       const result = await executeCode({ language: lang, code });
       rawOutput = result.stdout;
@@ -64,7 +66,7 @@ export async function proxyTool(input: ProxyToolInput): Promise<string> {
       // For unknown tools, instruct the user how to use compress directly
       return [
         `The proxy tool cannot directly invoke "${input.tool}" ` +
-        `(MCP servers cannot call other MCP tools).`,
+          `(MCP servers cannot call other MCP tools).`,
         '',
         'Instead, capture the output yourself and pipe it through the compress tool:',
         '',
@@ -76,7 +78,9 @@ export async function proxyTool(input: ProxyToolInput): Promise<string> {
         '```',
         '',
         'Or use execute() with shell to run CLI commands and get compressed output.',
-      ].filter(Boolean).join('\n');
+      ]
+        .filter(Boolean)
+        .join('\n');
     }
   }
 
@@ -89,7 +93,11 @@ export async function proxyTool(input: ProxyToolInput): Promise<string> {
   if (compressed.strategy !== 'as-is') {
     statsTracker.record(`proxy:${input.tool}`, rawOutput, compressed.output, compressed.strategy);
 
-    const footer = statsTracker.formatStatsFooter(rawOutput, compressed.output, compressed.strategy);
+    const footer = statsTracker.formatStatsFooter(
+      rawOutput,
+      compressed.output,
+      compressed.strategy
+    );
     return compressed.output + footer;
   }
 

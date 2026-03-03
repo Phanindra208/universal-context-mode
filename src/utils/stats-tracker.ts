@@ -25,12 +25,7 @@ export interface SessionStats {
 class StatsTracker {
   private events: CompressionEvent[] = [];
 
-  record(
-    tool: string,
-    inputText: string,
-    outputText: string,
-    strategy: string
-  ): CompressionEvent {
+  record(tool: string, inputText: string, outputText: string, strategy: string): CompressionEvent {
     const inputBytes = Buffer.byteLength(inputText, 'utf8');
     const outputBytes = Buffer.byteLength(outputText, 'utf8');
     const inputTokens = estimateTokens(inputText).tokens;
@@ -57,8 +52,7 @@ class StatsTracker {
     const totalOutputTokens = this.events.reduce((s, e) => s + e.outputTokens, 0);
     const bytesSaved = totalInputBytes - totalOutputBytes;
     const tokensSaved = totalInputTokens - totalOutputTokens;
-    const savingsRatio =
-      totalInputBytes > 0 ? (bytesSaved / totalInputBytes) * 100 : 0;
+    const savingsRatio = totalInputBytes > 0 ? (bytesSaved / totalInputBytes) * 100 : 0;
 
     return {
       totalInputBytes,

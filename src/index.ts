@@ -30,11 +30,11 @@ if (args[0] === 'setup') {
 
 async function startServer() {
   const envConfig = loadConfigFromEnv();
-  const _config = parseConfig(envConfig);
+  parseConfig(envConfig); // validate config on startup
 
   logger.info('Starting universal-context-mode MCP server', { pid: process.pid });
 
-  const { server, transport } = await createServer();
+  const { server, transport } = createServer();
 
   await server.connect(transport);
 
@@ -47,6 +47,10 @@ async function startServer() {
     process.exit(0);
   };
 
-  process.on('SIGINT', () => { void shutdown('SIGINT'); });
-  process.on('SIGTERM', () => { void shutdown('SIGTERM'); });
+  process.on('SIGINT', () => {
+    void shutdown('SIGINT');
+  });
+  process.on('SIGTERM', () => {
+    void shutdown('SIGTERM');
+  });
 }

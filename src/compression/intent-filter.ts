@@ -17,8 +17,9 @@ function stem(word: string): string {
   // Step 1a
   if (word.endsWith('sses')) word = word.slice(0, -2);
   else if (word.endsWith('ies')) word = word.slice(0, -2);
-  else if (word.endsWith('ss')) { /* no-op */ }
-  else if (word.endsWith('s')) word = word.slice(0, -1);
+  else if (word.endsWith('ss')) {
+    /* no-op */
+  } else if (word.endsWith('s')) word = word.slice(0, -1);
   // Step 1b
   if (word.endsWith('eed')) {
     if (word.length > 4) word = word.slice(0, -1);
@@ -29,11 +30,23 @@ function stem(word: string): string {
   }
   // Step 2 (simplified)
   const step2Map: Array<[string, string]> = [
-    ['ational', 'ate'], ['tional', 'tion'], ['enci', 'ence'],
-    ['anci', 'ance'], ['izer', 'ize'], ['iser', 'ise'],
-    ['alism', 'al'], ['ation', 'ate'], ['ator', 'ate'],
-    ['alism', 'al'], ['ness', ''], ['ment', ''], ['ful', ''],
-    ['ous', ''], ['ive', ''], ['ize', ''], ['ise', ''],
+    ['ational', 'ate'],
+    ['tional', 'tion'],
+    ['enci', 'ence'],
+    ['anci', 'ance'],
+    ['izer', 'ize'],
+    ['iser', 'ise'],
+    ['alism', 'al'],
+    ['ation', 'ate'],
+    ['ator', 'ate'],
+    ['alism', 'al'],
+    ['ness', ''],
+    ['ment', ''],
+    ['ful', ''],
+    ['ous', ''],
+    ['ive', ''],
+    ['ize', ''],
+    ['ise', ''],
   ];
   for (const [suffix, replacement] of step2Map) {
     if (word.endsWith(suffix) && word.length > suffix.length + 2) {
@@ -45,12 +58,59 @@ function stem(word: string): string {
 }
 
 const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'is', 'it', 'in', 'on', 'at', 'to', 'for',
-  'of', 'and', 'or', 'but', 'not', 'with', 'this', 'that', 'are',
-  'was', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-  'would', 'could', 'should', 'may', 'might', 'can', 'from', 'by',
-  'as', 'if', 'then', 'than', 'so', 'into', 'up', 'out', 'about',
-  'all', 'any', 'some', 'more', 'also', 'when', 'where', 'which',
+  'a',
+  'an',
+  'the',
+  'is',
+  'it',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'of',
+  'and',
+  'or',
+  'but',
+  'not',
+  'with',
+  'this',
+  'that',
+  'are',
+  'was',
+  'be',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'will',
+  'would',
+  'could',
+  'should',
+  'may',
+  'might',
+  'can',
+  'from',
+  'by',
+  'as',
+  'if',
+  'then',
+  'than',
+  'so',
+  'into',
+  'up',
+  'out',
+  'about',
+  'all',
+  'any',
+  'some',
+  'more',
+  'also',
+  'when',
+  'where',
+  'which',
 ]);
 
 function tokenize(text: string): string[] {
@@ -128,9 +188,7 @@ export function filterByIntent(
 
   for (const chunk of scored) {
     if (totalChars + chunk.content.length > maxOutputChars) break;
-    const section = chunk.heading
-      ? `## ${chunk.heading}\n${chunk.content}`
-      : chunk.content;
+    const section = chunk.heading ? `## ${chunk.heading}\n${chunk.content}` : chunk.content;
     selected.push(section);
     totalChars += section.length;
   }
@@ -158,9 +216,7 @@ function filterLinesByIntent(text: string, intent: string, maxOutputChars: numbe
   });
 
   // Sort by relevance but preserve original order for ties
-  const relevant = scored
-    .filter(s => s.score > 0)
-    .sort((a, b) => b.score - a.score || a.i - b.i);
+  const relevant = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score || a.i - b.i);
 
   // Add context lines around matches
   const lineIndices = new Set<number>();

@@ -54,8 +54,9 @@ describe('chunkMarkdown', () => {
   });
 
   it('splits large chunks at paragraph boundaries', () => {
-    const bigContent = Array.from({ length: 50 }, (_, i) =>
-      `Paragraph ${i + 1}: ${`word `.repeat(40)}`
+    const bigContent = Array.from(
+      { length: 50 },
+      (_, i) => `Paragraph ${i + 1}: ${`word `.repeat(40)}`
     ).join('\n\n');
     const text = `# Large Section\n\n${bigContent}`;
 

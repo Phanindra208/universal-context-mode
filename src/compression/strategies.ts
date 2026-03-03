@@ -76,14 +76,12 @@ function looksLikeCsv(lines: string[]): boolean {
 
 function looksLikeLog(lines: string[]): boolean {
   const logPatterns = [
-    /^\d{4}-\d{2}-\d{2}/,    // ISO date
+    /^\d{4}-\d{2}-\d{2}/, // ISO date
     /^\[\d{2}:\d{2}:\d{2}\]/, // [HH:MM:SS]
-    /^[A-Z]{4,5}:/,           // INFO: WARN: ERROR:
-    /^\d{13}\s/,               // Unix ms timestamp
+    /^[A-Z]{4,5}:/, // INFO: WARN: ERROR:
+    /^\d{13}\s/, // Unix ms timestamp
   ];
-  const matchCount = lines.filter(l =>
-    logPatterns.some(p => p.test(l))
-  ).length;
+  const matchCount = lines.filter(l => logPatterns.some(p => p.test(l))).length;
   return matchCount >= Math.min(2, lines.length);
 }
 
@@ -143,7 +141,7 @@ function summarizeJson(value: unknown, maxChars: number, depth = 0): string {
         if (Array.isArray(val)) {
           lines.push(`  ${key}: Array[${val.length}]`);
         } else if (typeof val === 'object' && val !== null) {
-          lines.push(`  ${key}: Object{${Object.keys(val as object).join(', ').slice(0, 60)}}`);
+          lines.push(`  ${key}: Object{${Object.keys(val).join(', ').slice(0, 60)}}`);
         } else {
           lines.push(`  ${key}: ${JSON.stringify(val)?.slice(0, 100) ?? 'null'}`);
         }
@@ -197,10 +195,7 @@ function compressLog(text: string, maxChars: number, intent?: string): string {
     }
   }
 
-  const result: string[] = [
-    `=== Log Summary: ${totalLines} lines ===`,
-    '',
-  ];
+  const result: string[] = [`=== Log Summary: ${totalLines} lines ===`, ''];
 
   if (errors.length > 0) {
     result.push(`ERRORS (${errors.length}):`);
@@ -222,7 +217,7 @@ function compressLog(text: string, maxChars: number, intent?: string): string {
     .slice(0, 20);
 
   result.push('TOP LOG PATTERNS:');
-  for (const [pattern, { count, example }] of sorted) {
+  for (const [, { count, example }] of sorted) {
     if (count > 1) {
       result.push(`  [x${count}] ${example.slice(0, 150)}`);
     }
@@ -257,13 +252,21 @@ function compressCode(text: string, maxChars: number, intent?: string): string {
     const trimmed = line.trim();
 
     // Always include comments and top-level signatures
-    if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+    if (
+      trimmed.startsWith('//') ||
+      trimmed.startsWith('#') ||
+      trimmed.startsWith('/*') ||
+      trimmed.startsWith('*')
+    ) {
       result.push(line);
       continue;
     }
 
     // Detect function/class signatures
-    const isSig = /^(export\s+)?(async\s+)?function\s+\w+|^(export\s+)?(abstract\s+)?class\s+\w+|^\s*(public|private|protected|static|async)?\s*\w+\s*\(/.test(trimmed);
+    const isSig =
+      /^(export\s+)?(async\s+)?function\s+\w+|^(export\s+)?(abstract\s+)?class\s+\w+|^\s*(public|private|protected|static|async)?\s*\w+\s*\(/.test(
+        trimmed
+      );
     const isArrow = /^(export\s+)?(const|let)\s+\w+\s*=\s*(async\s+)?\(/.test(trimmed);
     const isDecorator = trimmed.startsWith('@');
     const isImport = /^(import|from)\s/.test(trimmed);
@@ -421,7 +424,8 @@ function computeCsvStats(
       const num = parseFloat(cell);
       if (!isNaN(num)) values.push(num);
     }
-    if (values.length > rows.length * 0.5) { // mostly numeric
+    if (values.length > rows.length * 0.5) {
+      // mostly numeric
       const min = Math.min(...values);
       const max = Math.max(...values);
       const avg = values.reduce((s, v) => s + v, 0) / values.length;
@@ -500,12 +504,23 @@ export function compress(text: string, options: CompressOptions = {}): CompressR
       break;
     case 'summarize':
       switch (contentType) {
-        case 'json': output = compressJson(text, maxOutputChars, options.intent); break;
-        case 'log': output = compressLog(text, maxOutputChars, options.intent); break;
-        case 'code': output = compressCode(text, maxOutputChars, options.intent); break;
-        case 'markdown': output = compressMarkdown(text, maxOutputChars, options.intent); break;
-        case 'csv': output = compressCsv(text, maxOutputChars, options.intent); break;
-        default: output = genericTruncate(text, maxOutputChars, 50, 20, options.intent);
+        case 'json':
+          output = compressJson(text, maxOutputChars, options.intent);
+          break;
+        case 'log':
+          output = compressLog(text, maxOutputChars, options.intent);
+          break;
+        case 'code':
+          output = compressCode(text, maxOutputChars, options.intent);
+          break;
+        case 'markdown':
+          output = compressMarkdown(text, maxOutputChars, options.intent);
+          break;
+        case 'csv':
+          output = compressCsv(text, maxOutputChars, options.intent);
+          break;
+        default:
+          output = genericTruncate(text, maxOutputChars, 50, 20, options.intent);
       }
       break;
     default:
@@ -513,9 +528,8 @@ export function compress(text: string, options: CompressOptions = {}): CompressR
   }
 
   const outputChars = output.length;
-  const savedPercent = inputChars > 0
-    ? Math.round(((inputChars - outputChars) / inputChars) * 100)
-    : 0;
+  const savedPercent =
+    inputChars > 0 ? Math.round(((inputChars - outputChars) / inputChars) * 100) : 0;
 
   return { output, strategy, contentType, inputChars, outputChars, savedPercent };
 }

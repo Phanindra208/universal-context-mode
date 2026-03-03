@@ -5,7 +5,7 @@
 
 export interface Chunk {
   heading: string;
-  level: number;     // 1-6 for h1-h6, 0 for top-level content
+  level: number; // 1-6 for h1-h6, 0 for top-level content
   content: string;
   startLine: number;
   endLine: number;
@@ -30,7 +30,13 @@ export function chunkMarkdown(text: string, maxChunkSize = 1500): Chunk[] {
 
     // If chunk is larger than maxChunkSize, split it further
     if (content.length > maxChunkSize) {
-      const subChunks = splitLargeChunk(content, maxChunkSize, currentHeading, currentLevel, startLine);
+      const subChunks = splitLargeChunk(
+        content,
+        maxChunkSize,
+        currentHeading,
+        currentLevel,
+        startLine
+      );
       chunks.push(...subChunks);
     } else {
       chunks.push({
@@ -122,10 +128,12 @@ function splitLargeChunk(
 }
 
 export function reconstructFromChunks(chunks: Chunk[]): string {
-  return chunks.map(c => {
-    if (c.level > 0) {
-      return `${'#'.repeat(c.level)} ${c.heading}\n\n${c.content}`;
-    }
-    return c.content;
-  }).join('\n\n');
+  return chunks
+    .map(c => {
+      if (c.level > 0) {
+        return `${'#'.repeat(c.level)} ${c.heading}\n\n${c.content}`;
+      }
+      return c.content;
+    })
+    .join('\n\n');
 }

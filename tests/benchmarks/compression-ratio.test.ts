@@ -31,7 +31,9 @@ const CASES: BenchmarkCase[] = [
     generateContent: () => {
       const lines = ['project@1.0.0 /path/to/project'];
       for (let i = 0; i < 200; i++) {
-        lines.push(`├── package-${i}@${Math.floor(Math.random() * 5)}.${Math.floor(Math.random() * 10)}.0`);
+        lines.push(
+          `├── package-${i}@${Math.floor(Math.random() * 5)}.${Math.floor(Math.random() * 10)}.0`
+        );
       }
       return lines.join('\n');
     },
@@ -50,7 +52,8 @@ const CASES: BenchmarkCase[] = [
           createdAt: new Date(Date.now() - i * 86400000).toISOString(),
           metadata: { loginCount: i * 3, lastActive: new Date().toISOString() },
         })),
-        null, 2
+        null,
+        2
       ),
   },
   {
@@ -61,12 +64,15 @@ const CASES: BenchmarkCase[] = [
       const lines: string[] = [];
       for (let i = 0; i < 1000; i++) {
         const level = i % 50 === 0 ? 'ERROR' : i % 20 === 0 ? 'WARN' : 'INFO';
-        const msg = level === 'ERROR'
-          ? 'Connection refused to database'
-          : level === 'WARN'
-          ? 'Slow query detected (>500ms)'
-          : `Processing request ${i}`;
-        lines.push(`2024-01-15T10:${String(Math.floor(i / 60)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}Z ${level} ${msg}`);
+        const msg =
+          level === 'ERROR'
+            ? 'Connection refused to database'
+            : level === 'WARN'
+              ? 'Slow query detected (>500ms)'
+              : `Processing request ${i}`;
+        lines.push(
+          `2024-01-15T10:${String(Math.floor(i / 60)).padStart(2, '0')}:${String(i % 60).padStart(2, '0')}Z ${level} ${msg}`
+        );
       }
       return lines.join('\n');
     },
@@ -158,7 +164,9 @@ const config = {
       ];
       for (let i = 0; i < 100; i++) {
         const id = Math.random().toString(16).slice(2, 14);
-        lines.push(`${id}   nginx:1.25.${i % 5}             "/docker-entrypoint.…"   2 hours ago    Up 2 hours     0.0.0.0:${8080 + i}->80/tcp   web-${i}`);
+        lines.push(
+          `${id}   nginx:1.25.${i % 5}             "/docker-entrypoint.…"   2 hours ago    Up 2 hours     0.0.0.0:${8080 + i}->80/tcp   web-${i}`
+        );
       }
       return lines.join('\n');
     },

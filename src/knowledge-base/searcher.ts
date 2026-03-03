@@ -50,10 +50,7 @@ export class Searcher {
       return `No results found for "${response.query}" in knowledge base "${response.kbName}".`;
     }
 
-    const lines: string[] = [
-      `Found ${response.totalFound} result(s) for "${response.query}":`,
-      '',
-    ];
+    const lines: string[] = [`Found ${response.totalFound} result(s) for "${response.query}":`, ''];
 
     for (let i = 0; i < response.results.length; i++) {
       const r = response.results[i]!;

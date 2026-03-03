@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  compress,
-  detectContentType,
-  type ContentType,
-} from '../../src/compression/strategies.js';
+import { compress, detectContentType } from '../../src/compression/strategies.js';
 
 // ─── Content Type Detection ────────────────────────────────────────────────
 
@@ -98,7 +94,9 @@ describe('compress', () => {
     const lines: string[] = [];
     for (let i = 0; i < 200; i++) {
       if (i % 20 === 0) {
-        lines.push(`2024-01-15T10:${String(i).padStart(2, '0')}:00Z ERROR Connection refused to db`);
+        lines.push(
+          `2024-01-15T10:${String(i).padStart(2, '0')}:00Z ERROR Connection refused to db`
+        );
       } else {
         lines.push(`2024-01-15T10:${String(i).padStart(2, '0')}:00Z INFO Processing request #${i}`);
       }
@@ -114,9 +112,9 @@ describe('compress', () => {
   it('compresses markdown to outline', () => {
     const sections = ['Introduction', 'Installation', 'Configuration', 'API Reference', 'Examples'];
     // Each section has 300 words to ensure we exceed the 5KB threshold
-    const md = sections.map(s =>
-      `# ${s}\n\nThis section covers ${s} topics in depth.\n\n${`word `.repeat(300)}`
-    ).join('\n\n');
+    const md = sections
+      .map(s => `# ${s}\n\nThis section covers ${s} topics in depth.\n\n${`word `.repeat(300)}`)
+      .join('\n\n');
 
     expect(md.length).toBeGreaterThan(5120); // must be above threshold
 
@@ -161,8 +159,10 @@ Log all exceptions.
 
   it('compresses CSV with stats', () => {
     const header = 'product,price,quantity,category';
-    const rows = Array.from({ length: 500 }, (_, i) =>
-      `Product${i},${(Math.random() * 100).toFixed(2)},${Math.floor(Math.random() * 100)},Cat${i % 5}`
+    const rows = Array.from(
+      { length: 500 },
+      (_, i) =>
+        `Product${i},${(Math.random() * 100).toFixed(2)},${Math.floor(Math.random() * 100)},Cat${i % 5}`
     );
     const csv = [header, ...rows].join('\n');
 

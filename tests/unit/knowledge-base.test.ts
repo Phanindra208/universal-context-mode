@@ -22,7 +22,11 @@ describe('SqliteStore', () => {
 
   afterEach(() => {
     store.close();
-    try { if (existsSync(dbPath)) unlinkSync(dbPath); } catch { /* best effort */ }
+    try {
+      if (existsSync(dbPath)) unlinkSync(dbPath);
+    } catch {
+      /* best effort */
+    }
   });
 
   it('initializes without error', () => {
@@ -39,11 +43,15 @@ describe('SqliteStore', () => {
   });
 
   it('searches with BM25 ranking', async () => {
-    await store.insertChunks([
-      { content: 'Authentication and authorization in web applications', heading: 'Security' },
-      { content: 'Database connection pooling with PostgreSQL', heading: 'Database' },
-      { content: 'JWT tokens for authentication', heading: 'Auth' },
-    ], 'docs.md', 'default');
+    await store.insertChunks(
+      [
+        { content: 'Authentication and authorization in web applications', heading: 'Security' },
+        { content: 'Database connection pooling with PostgreSQL', heading: 'Database' },
+        { content: 'JWT tokens for authentication', heading: 'Auth' },
+      ],
+      'docs.md',
+      'default'
+    );
 
     const results = await store.search('authentication JWT', 'default', 5);
     expect(results.length).toBeGreaterThan(0);
@@ -54,11 +62,13 @@ describe('SqliteStore', () => {
   it('isolates knowledge bases', async () => {
     await store.insertChunks(
       [{ content: 'Angular framework documentation', heading: 'Angular' }],
-      'angular.md', 'angular-docs'
+      'angular.md',
+      'angular-docs'
     );
     await store.insertChunks(
       [{ content: 'React framework documentation', heading: 'React' }],
-      'react.md', 'react-docs'
+      'react.md',
+      'react-docs'
     );
 
     const angularResults = await store.search('framework', 'angular-docs', 5);
@@ -71,7 +81,8 @@ describe('SqliteStore', () => {
   it('clears knowledge base', async () => {
     await store.insertChunks(
       [{ content: 'Some content to clear', heading: 'Test' }],
-      'test.md', 'clearme'
+      'test.md',
+      'clearme'
     );
 
     await store.clearKnowledgeBase('clearme');
@@ -85,11 +96,13 @@ describe('SqliteStore', () => {
         { content: 'Chunk 1 content here', heading: 'H1' },
         { content: 'Chunk 2 content here', heading: 'H2' },
       ],
-      'source1.md', 'stats-test'
+      'source1.md',
+      'stats-test'
     );
     await store.insertChunks(
       [{ content: 'Chunk 3 content here', heading: 'H3' }],
-      'source2.md', 'stats-test'
+      'source2.md',
+      'stats-test'
     );
 
     const stats = await store.getStats('stats-test');
@@ -125,7 +138,10 @@ describe('Indexer', () => {
   });
 
   it('indexes URL source', async () => {
-    const result = await indexer.indexUrl('https://example.com', '# Docs\n\nContent here with more words.');
+    const result = await indexer.indexUrl(
+      'https://example.com',
+      '# Docs\n\nContent here with more words.'
+    );
     expect(result.source).toBe('https://example.com');
   });
 });
@@ -138,7 +154,8 @@ describe('Searcher', () => {
     store = new SqliteStore(tempDbPath());
     const indexer = new Indexer(store);
 
-    await indexer.indexText(`
+    await indexer.indexText(
+      `
 # TypeScript Interfaces
 Interfaces define contracts for objects. Use interface keyword.
 
@@ -150,7 +167,9 @@ Classes support inheritance and encapsulation.
 
 ## Access Modifiers
 Public, private, and protected modifiers control visibility.
-    `, { source: 'typescript.md' });
+    `,
+      { source: 'typescript.md' }
+    );
 
     searcher = new Searcher(store);
   });

@@ -131,7 +131,12 @@ export class SqliteStore {
 
     const rows: Array<{ source: string; heading: string; content: string; kb_name: string }> = [];
     while (stmt.step()) {
-      const row = stmt.getAsObject() as { source: string; heading: string; content: string; kb_name: string };
+      const row = stmt.getAsObject() as {
+        source: string;
+        heading: string;
+        content: string;
+        kb_name: string;
+      };
       rows.push(row);
     }
     stmt.free();
@@ -140,21 +145,19 @@ export class SqliteStore {
 
     const scored = this.bm25Score(query, rows);
 
-    return scored
-      .slice(0, topK)
-      .map(r => ({
-        source: r.row.source,
-        heading: r.row.heading,
-        snippet: this.extractSnippet(r.row.content, query),
-        score: r.score,
-        kbName: r.row.kb_name,
-      }));
+    return scored.slice(0, topK).map(r => ({
+      source: r.row.source,
+      heading: r.row.heading,
+      snippet: this.extractSnippet(r.row.content, query),
+      score: r.score,
+      kbName: r.row.kb_name,
+    }));
   }
 
   private bm25Score(
     query: string,
     rows: Array<{ source: string; heading: string; content: string; kb_name: string }>
-  ): Array<{ row: typeof rows[0]; score: number }> {
+  ): Array<{ row: (typeof rows)[0]; score: number }> {
     const queryTerms = tokenize(query);
     if (queryTerms.length === 0) return [];
 
@@ -188,14 +191,18 @@ export class SqliteStore {
 
         const termDf = df.get(qt) ?? 0;
         const idf = Math.log((N - termDf + 0.5) / (termDf + 0.5) + 1);
-        const tfNorm = (termTf * (k1 + 1)) / (termTf + k1 * (1 - b + b * (docLen / Math.max(avgLen, 1))));
+        const tfNorm =
+          (termTf * (k1 + 1)) / (termTf + k1 * (1 - b + b * (docLen / Math.max(avgLen, 1))));
         score += idf * tfNorm;
       }
 
       // Boost heading matches
       const headingTerms = new Set(tokenize(row.heading));
       for (const qt of queryTerms) {
-        if (headingTerms.has(qt)) { score *= 1.5; break; }
+        if (headingTerms.has(qt)) {
+          score *= 1.5;
+          break;
+        }
       }
 
       return { row, score };
@@ -275,10 +282,42 @@ function tokenize(text: string): string[] {
 }
 
 const STOP_WORDS = new Set([
-  'a', 'an', 'the', 'is', 'it', 'in', 'on', 'at', 'to', 'for',
-  'of', 'and', 'or', 'but', 'not', 'with', 'this', 'that', 'are',
-  'was', 'be', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-  'would', 'could', 'should', 'may', 'might', 'can', 'from', 'by',
+  'a',
+  'an',
+  'the',
+  'is',
+  'it',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'of',
+  'and',
+  'or',
+  'but',
+  'not',
+  'with',
+  'this',
+  'that',
+  'are',
+  'was',
+  'be',
+  'have',
+  'has',
+  'had',
+  'do',
+  'does',
+  'did',
+  'will',
+  'would',
+  'could',
+  'should',
+  'may',
+  'might',
+  'can',
+  'from',
+  'by',
 ]);
 
 function stem(word: string): string {
