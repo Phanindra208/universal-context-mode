@@ -6,14 +6,19 @@ export interface FetchAndIndexToolInput {
   url: string;
   kb_name?: string;
   chunk_size?: number;
+  headers?: Record<string, string>;
 }
 
-async function fetchAndConvertToMarkdown(url: string): Promise<string> {
+async function fetchAndConvertToMarkdown(
+  url: string,
+  extraHeaders?: Record<string, string>
+): Promise<string> {
   // Use built-in fetch (Node 18+)
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'universal-context-mode/0.1.0 (MCP Server)',
       Accept: 'text/html,application/xhtml+xml,text/plain',
+      ...extraHeaders,
     },
     signal: AbortSignal.timeout(15_000),
   });
@@ -51,11 +56,11 @@ async function fetchAndConvertToMarkdown(url: string): Promise<string> {
 }
 
 export async function fetchAndIndexTool(input: FetchAndIndexToolInput): Promise<string> {
-  const { url, kb_name = 'default', chunk_size } = input;
+  const { url, kb_name = 'default', chunk_size, headers } = input;
 
   let markdown: string;
   try {
-    markdown = await fetchAndConvertToMarkdown(url);
+    markdown = await fetchAndConvertToMarkdown(url, headers);
   } catch (err) {
     return `Error fetching "${url}": ${String(err)}`;
   }

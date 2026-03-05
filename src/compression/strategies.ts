@@ -5,7 +5,18 @@
 
 import { filterByIntent } from './intent-filter.js';
 
-export type ContentType = 'json' | 'log' | 'code' | 'markdown' | 'csv' | 'generic';
+export type ContentType =
+  | 'json'
+  | 'log'
+  | 'code'
+  | 'markdown'
+  | 'csv'
+  | 'yaml'
+  | 'xml'
+  | 'diff'
+  | 'stacktrace'
+  | 'env'
+  | 'generic';
 export type CompressionStrategy = 'auto' | 'truncate' | 'summarize' | 'filter' | 'as-is';
 
 export interface CompressOptions {
@@ -37,6 +48,21 @@ export function detectContentType(text: string): ContentType {
   if ((trimmed.startsWith('{') || trimmed.startsWith('[')) && isValidJson(trimmed)) {
     return 'json';
   }
+
+  // Git diff: starts with diff --git or --- a/
+  if (/^(diff --git|--- a\/|@@\s+-\d+)/.test(trimmed)) return 'diff';
+
+  // Stack trace: common crash/exception patterns
+  if (looksLikeStackTrace(trimmed)) return 'stacktrace';
+
+  // XML: starts with < and has tag structure
+  if (trimmed.startsWith('<') && /<\w[\w:.-]*(\s[^>]*)?>/.test(trimmed)) return 'xml';
+
+  // YAML: key: value structure (not JSON)
+  if (looksLikeYaml(trimmed)) return 'yaml';
+
+  // .env / INI: KEY=VALUE or [section] patterns
+  if (looksLikeEnv(trimmed)) return 'env';
 
   // CSV: consistent delimiter pattern in first few lines
   const firstLines = trimmed.split('\n').slice(0, 5);
@@ -97,6 +123,30 @@ function looksLikeCode(text: string): boolean {
 
 function looksLikeMarkdown(text: string): boolean {
   return /^#{1,6}\s/m.test(text) || /^```/m.test(text) || /^\s*[-*]\s/m.test(text);
+}
+
+function looksLikeYaml(text: string): boolean {
+  const lines = text.split('\n').slice(0, 10);
+  const kvLines = lines.filter(l => /^\s*[\w.-]+\s*:(\s|$)/.test(l)).length;
+  return kvLines >= Math.min(3, lines.length);
+}
+
+function looksLikeEnv(text: string): boolean {
+  const lines = text
+    .split('\n')
+    .slice(0, 10)
+    .filter(l => l.trim() && !l.startsWith('#'));
+  const kvLines = lines.filter(l => /^[A-Z_][A-Z0-9_]*\s*=/.test(l) || /^\[.+\]$/.test(l)).length;
+  return kvLines >= Math.min(2, lines.length);
+}
+
+function looksLikeStackTrace(text: string): boolean {
+  return (
+    (/at\s+[\w.<>$]+\s*\(/.test(text) && /Error:|Exception:/.test(text)) || // JS/Java
+    (/Traceback \(most recent call last\)/i.test(text) && /File ".+", line \d+/.test(text)) || // Python
+    (/thread '.+' panicked at/.test(text) && /stack backtrace/.test(text)) || // Rust
+    (/#\d+\s+0x[0-9a-f]+ in /.test(text) && /\(gdb\)|Backtrace/.test(text)) // C/C++ GDB
+  );
 }
 
 // ─── Compression Strategies ──────────────────────────────────────────────────
@@ -279,14 +329,21 @@ function compressCode(text: string, maxChars: number, intent?: string): string {
 
     if (isSig || isArrow) {
       if (inBlock && blockLines.length > 0) {
-        result.push('  // ... body omitted');
-        result.push('}');
+        // Keep short methods (≤5 lines) and bodies with TODOs/FIXMEs/error handling
+        const hasInterest = blockLines.some(l =>
+          /TODO|FIXME|HACK|throw|catch|Error\(|panic!|assert/.test(l)
+        );
+        if (blockLines.length <= 5 || hasInterest) {
+          result.push(...blockLines);
+        } else {
+          result.push('  // ... body omitted');
+          result.push('}');
+        }
       }
       inBlock = true;
       braceDepth = 0;
       blockLines = [];
       result.push(line);
-      // Count opening braces
       braceDepth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
       if (braceDepth <= 0) inBlock = false;
       continue;
@@ -296,8 +353,15 @@ function compressCode(text: string, maxChars: number, intent?: string): string {
       braceDepth += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
       blockLines.push(line);
       if (braceDepth <= 0) {
-        result.push('  // ... body omitted');
-        result.push('}');
+        const hasInterest = blockLines.some(l =>
+          /TODO|FIXME|HACK|throw|catch|Error\(|panic!|assert/.test(l)
+        );
+        if (blockLines.length <= 6 || hasInterest) {
+          result.push(...blockLines);
+        } else {
+          result.push('  // ... body omitted');
+          result.push('}');
+        }
         inBlock = false;
         blockLines = [];
       }
@@ -435,6 +499,245 @@ function computeCsvStats(
   return stats;
 }
 
+function compressYaml(text: string, maxChars: number, intent?: string): string {
+  if (intent) return filterByIntent(text, intent, maxChars);
+
+  const lines = text.split('\n');
+  const totalLines = lines.length;
+  const result: string[] = [`=== YAML: ${totalLines} lines ===`, ''];
+  let depth = 0;
+  let omittedBlock = 0;
+  const MAX_DEPTH = 3;
+
+  for (const line of lines) {
+    if (!line.trim() || line.trim().startsWith('#')) {
+      result.push(line);
+      continue;
+    }
+    // Calculate indent depth
+    const indent = line.match(/^(\s*)/)?.[1]?.length ?? 0;
+    depth = Math.floor(indent / 2);
+
+    if (depth < MAX_DEPTH) {
+      if (omittedBlock > 0) {
+        result.push(`${'  '.repeat(depth)}# ... ${omittedBlock} lines omitted`);
+        omittedBlock = 0;
+      }
+      // Mask long values (multiline blocks, secrets)
+      const masked = line.replace(/:\s+.{80,}$/, ': <...long value...>');
+      result.push(masked);
+    } else {
+      omittedBlock++;
+    }
+  }
+  if (omittedBlock > 0) result.push(`# ... ${omittedBlock} lines omitted`);
+
+  const output = result.join('\n');
+  return output.length > maxChars ? output.slice(0, maxChars) : output;
+}
+
+function compressXml(text: string, maxChars: number, intent?: string): string {
+  if (intent) return filterByIntent(text, intent, maxChars);
+
+  // Extract tag structure only — strip text content and attributes for large nodes
+  const lines = text.split('\n');
+  const totalLines = lines.length;
+  const result: string[] = [`=== XML: ${totalLines} lines ===`, ''];
+  let depth = 0;
+  let omitted = 0;
+  const MAX_DEPTH = 4;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Count tag depth changes
+    const opens = (trimmed.match(/<[^/?!][^>]*(?<!\/)>/g) ?? []).length;
+    const closes = (trimmed.match(/<\/[^>]+>/g) ?? []).length;
+
+    if (depth < MAX_DEPTH) {
+      if (omitted > 0) {
+        result.push(`${'  '.repeat(depth)}<!-- ... ${omitted} lines omitted -->`);
+        omitted = 0;
+      }
+      // Keep tag names but truncate long attribute lists and text content
+      const stripped = trimmed
+        .replace(/\s{2,}/g, ' ')
+        .replace(/>([^<]{50,})</g, '><...text...><')
+        .slice(0, 200);
+      result.push(stripped);
+    } else {
+      omitted++;
+    }
+
+    depth += opens - closes;
+    depth = Math.max(0, depth);
+  }
+  if (omitted > 0) result.push(`<!-- ... ${omitted} lines omitted -->`);
+
+  const output = result.join('\n');
+  return output.length > maxChars ? output.slice(0, maxChars) : output;
+}
+
+function compressDiff(text: string, maxChars: number, intent?: string): string {
+  if (intent) return filterByIntent(text, intent, maxChars);
+
+  const lines = text.split('\n');
+  const result: string[] = [];
+  let currentFile = '';
+  let addCount = 0;
+  let removeCount = 0;
+  let hunkOmitted = 0;
+
+  const flushHunk = () => {
+    if (hunkOmitted > 0) {
+      result.push(`  ... ${hunkOmitted} diff lines omitted (+${addCount} -${removeCount})`);
+      hunkOmitted = 0;
+      addCount = 0;
+      removeCount = 0;
+    }
+  };
+
+  for (const line of lines) {
+    if (line.startsWith('diff --git') || line.startsWith('--- ') || line.startsWith('+++ ')) {
+      flushHunk();
+      if (line.startsWith('diff --git')) {
+        currentFile = line.replace('diff --git a/', '').split(' b/')[0] ?? line;
+        result.push('');
+        result.push(`FILE: ${currentFile}`);
+      }
+      continue;
+    }
+
+    if (line.startsWith('@@')) {
+      flushHunk();
+      // Show the function context from @@ line
+      const ctx = line.match(/@@ .+ @@\s*(.*)/)?.[1]?.trim();
+      result.push(`  ${line.slice(0, 60)}${ctx ? ` — ${ctx}` : ''}`);
+      continue;
+    }
+
+    if (line.startsWith('+')) {
+      addCount++;
+      hunkOmitted++;
+    } else if (line.startsWith('-')) {
+      removeCount++;
+      hunkOmitted++;
+    } else if (
+      line.startsWith('index ') ||
+      line.startsWith('new file') ||
+      line.startsWith('Binary')
+    ) {
+      result.push(`  ${line}`);
+    }
+  }
+  flushHunk();
+
+  const header = [
+    `=== Git Diff ===`,
+    `Files changed: ${result.filter(l => l.startsWith('FILE:')).length}`,
+    '',
+  ];
+
+  const output = [...header, ...result].join('\n');
+  return output.length > maxChars ? output.slice(0, maxChars) : output;
+}
+
+function compressStackTrace(text: string, maxChars: number, intent?: string): string {
+  if (intent) return filterByIntent(text, intent, maxChars);
+
+  const lines = text.split('\n');
+  const result: string[] = ['=== Stack Trace ===', ''];
+  const frameLines: string[] = [];
+  const errorLines: string[] = [];
+
+  for (const line of lines) {
+    // Error/exception message lines
+    if (/Error:|Exception:|panicked at|Traceback|signal \d+/i.test(line)) {
+      errorLines.push(line.trim().slice(0, 300));
+    }
+    // Stack frame lines
+    else if (
+      /^\s+at\s/.test(line) || // JS/Java
+      /^\s+File ".+", line \d+/.test(line) || // Python
+      /^\s+\d+:\s+0x/.test(line) || // Rust
+      /^\s*#\d+\s/.test(line) // C/C++ GDB
+    ) {
+      frameLines.push(line.trim().slice(0, 200));
+    }
+    // Cause/context lines
+    else if (/caused by|note:|hint:|= note/i.test(line)) {
+      result.push(line.trim().slice(0, 200));
+    }
+  }
+
+  if (errorLines.length > 0) {
+    result.push('ERROR:');
+    result.push(...errorLines.map(l => `  ${l}`));
+    result.push('');
+  }
+
+  const totalFrames = frameLines.length;
+  const showTop = Math.min(5, totalFrames);
+  const showBottom = Math.min(3, Math.max(0, totalFrames - showTop));
+
+  if (totalFrames > 0) {
+    result.push(`FRAMES: ${totalFrames} total`);
+    result.push(...frameLines.slice(0, showTop).map(l => `  ${l}`));
+    if (showBottom > 0 && totalFrames > showTop) {
+      const omitted = totalFrames - showTop - showBottom;
+      if (omitted > 0) result.push(`  ... ${omitted} frames omitted ...`);
+      result.push(...frameLines.slice(-showBottom).map(l => `  ${l}`));
+    }
+  }
+
+  const output = result.join('\n');
+  return output.length > maxChars ? output.slice(0, maxChars) : output;
+}
+
+function compressEnv(text: string, maxChars: number, intent?: string): string {
+  if (intent) return filterByIntent(text, intent, maxChars);
+
+  const lines = text.split('\n');
+  const result: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      result.push('');
+      continue;
+    }
+    if (trimmed.startsWith('#')) {
+      result.push(line);
+      continue;
+    }
+
+    // INI section headers
+    if (/^\[.+\]$/.test(trimmed)) {
+      result.push(line);
+      continue;
+    }
+
+    // KEY=VALUE — show key, mask value
+    const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_.]*)\s*[=:]\s*(.*)/);
+    if (match) {
+      const key = match[1];
+      const value = match[2] ?? '';
+      // Mask sensitive-looking values
+      const isSensitive = /secret|password|token|key|auth|credential|api_/i.test(key ?? '');
+      const displayVal = isSensitive
+        ? '***'
+        : value.slice(0, 60) + (value.length > 60 ? '...' : '');
+      result.push(`${key}=${displayVal}`);
+    } else {
+      result.push(line.slice(0, 100));
+    }
+  }
+
+  const output = result.join('\n');
+  return output.length > maxChars ? output.slice(0, maxChars) : output;
+}
+
 function genericTruncate(
   text: string,
   maxChars: number,
@@ -518,6 +821,21 @@ export function compress(text: string, options: CompressOptions = {}): CompressR
           break;
         case 'csv':
           output = compressCsv(text, maxOutputChars, options.intent);
+          break;
+        case 'yaml':
+          output = compressYaml(text, maxOutputChars, options.intent);
+          break;
+        case 'xml':
+          output = compressXml(text, maxOutputChars, options.intent);
+          break;
+        case 'diff':
+          output = compressDiff(text, maxOutputChars, options.intent);
+          break;
+        case 'stacktrace':
+          output = compressStackTrace(text, maxOutputChars, options.intent);
+          break;
+        case 'env':
+          output = compressEnv(text, maxOutputChars, options.intent);
           break;
         default:
           output = genericTruncate(text, maxOutputChars, 50, 20, options.intent);
