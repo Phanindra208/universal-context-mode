@@ -252,6 +252,16 @@ fetch_and_index({ url: "https://angular.io/guide/signals", kb_name: "angular" })
 search({ query: "computed signals", kb_name: "angular" })
 ```
 
+Private/authenticated URLs supported via `headers`:
+
+```javascript
+fetch_and_index({
+  url: "https://api.github.com/repos/org/repo/readme",
+  kb_name: "project-docs",
+  headers: { "Authorization": "Bearer ghp_xxx" }
+})
+```
+
 HTML → Markdown conversion. Raw content never enters context.
 
 ---
@@ -266,7 +276,20 @@ compress({
 })
 ```
 
-Auto-detects content type (JSON / logs / code / markdown / CSV) and applies the best strategy.
+Auto-detects content type and applies the best strategy:
+
+| Type | Examples |
+|---|---|
+| JSON | API responses, config files |
+| Logs | app logs, docker logs, syslog |
+| Code | JS/TS/Python/Go/Rust/C++ source |
+| Markdown | docs, READMEs, wikis |
+| CSV | exports, reports |
+| YAML/TOML | docker-compose, Cargo.toml, CI configs |
+| XML | pom.xml, AndroidManifest, .cproject |
+| Diff | git diff output — shows files + context, strips line noise |
+| Stack trace | JS/Python/Rust/C++ crashes — extracts root cause, collapses frames |
+| Env/INI | `.env`, `.ini` files — shows keys, **masks secrets automatically** |
 
 ---
 
@@ -290,22 +313,31 @@ The key differentiator for IDEs without `PreToolUse` hooks.
 report()
 ```
 
-Returns a savings summary for the current session: total compressions, KB/tokens saved, percentage reduction, and a per-tool breakdown. Use it to verify context-mode is working.
+Returns a savings summary for the current session plus persistent today/all-time totals. Use it to verify context-mode is working.
 
 ```
-=== context-mode savings report ===
-Session duration : 12m 34s
-Compressions     : 5
-Input            : 423.8 KB  (103,857 tokens)
-Output           : 22.4 KB   ( 5,493 tokens)
-Saved            : 401.4 KB  ( 98,364 tokens) — 94.7%
+=== context-mode Session Report ===
 
-By tool:
-  execute      : 3 calls   87.2%
-  compress     : 2 calls   98.1%
+Session: 23m | 5 compressions
 
-Status: active — context-mode is working
+SAVINGS SUMMARY
+  Input:        45.2 KB  (~11.3K tokens)
+  Output:        8.1 KB  (~2.0K tokens)
+  Saved:        37.1 KB  (~9.3K tokens)
+  Ratio:        82.1% reduction
+
+BY TOOL
+  compress         3x    28.4 KB saved  (~7.1K tokens)
+  fetch_and_index  2x     8.7 KB saved  (~2.2K tokens)
+
+HISTORICAL
+  Today      112.3 KB  (~28.1K tokens)  across 4 sessions
+  All time   843.1 KB  (~210.8K tokens) across 23 sessions
+
+STATUS: ✓ Working — saved 37.1 KB from context window this session
 ```
+
+Historical stats persist across server restarts in `~/.ucm-stats.json`.
 
 ---
 
@@ -320,6 +352,10 @@ Status: active — context-mode is working
 | CSV export — 500 rows | 22 KB | 0.6 KB | **97%** |
 | npm list — 300 packages | 12 KB | 1.2 KB | **90%** |
 | TypeScript — 30 methods | 18 KB | 3 KB | **83%** |
+| YAML — docker-compose (200 lines) | 8 KB | 1.5 KB | **81%** |
+| git diff — 50 files changed | 42 KB | 13 KB | **69%** |
+| Stack trace — Java exception | 6 KB | 0.5 KB | **91%** |
+| `.env` — 80 keys (secrets masked) | 4 KB | 1.2 KB | **70%** |
 
 All algorithmic. No LLM. No API key. Works offline. See [BENCHMARK.md](BENCHMARK.md).
 
