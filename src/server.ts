@@ -186,6 +186,12 @@ const TOOLS: Tool[] = [
           type: 'number',
           description: 'Maximum characters per chunk. Default: 1500.',
         },
+        headers: {
+          type: 'object',
+          description:
+            'Optional HTTP headers to include (e.g. Authorization for private docs). Values are passed as-is.',
+          additionalProperties: { type: 'string' },
+        },
       },
       required: ['url'],
     },

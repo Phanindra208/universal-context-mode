@@ -1,6 +1,6 @@
 {
   "name": "universal-context-mode",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Stop losing context to large outputs — MCP server that compresses tool outputs. Works everywhere: Claude Code, Cursor, Windsurf, Copilot, and any MCP-compatible IDE.",
   "keywords": [
     "mcp",

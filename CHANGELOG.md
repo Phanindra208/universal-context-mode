@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-03-05
+
+### Added
+- 5 new compression content types: YAML/TOML, XML, git diff, stack traces, env/INI files
+- Persistent stats across sessions — `report` now shows today and all-time savings (stored in `~/.ucm-stats.json`)
+- Smarter code compression: short methods (≤5 lines) and bodies with TODO/FIXME/throw/catch are preserved
+- `fetch_and_index` accepts optional `headers` parameter for private/authenticated URLs
+
+### Fixed
+- Lint: removed unnecessary escape `\#` in GDB stack trace regex
+- Lint: removed unused `section` variable in env compressor
+
 ## [0.1.5] - 2026-03-05
 
 ### Fixed

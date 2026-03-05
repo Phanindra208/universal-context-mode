@@ -21,7 +21,8 @@ function formatDuration(start: Date, end: Date): string {
 
 function buildReport(stats: SessionStats): string {
   if (stats.totalEvents === 0) {
-    return [
+    const hist = statsTracker.getHistoricalStats();
+    const histLines = [
       '=== context-mode Report ===',
       '',
       'No compressions yet in this session.',
@@ -31,7 +32,18 @@ function buildReport(stats: SessionStats): string {
       '',
       'Tip: Use context-mode.compress, context-mode.execute, or context-mode.proxy',
       'to start saving context window space.',
-    ].join('\n');
+    ];
+    if (hist.allTimeBytesSaved > 0) {
+      histLines.push('');
+      histLines.push('HISTORICAL');
+      histLines.push(
+        `  Today      ${formatKB(hist.todayBytesSaved).padStart(10)}  (~${formatTokens(hist.todayTokensSaved)})  across ${hist.todaySessions} session${hist.todaySessions !== 1 ? 's' : ''}`
+      );
+      histLines.push(
+        `  All time   ${formatKB(hist.allTimeBytesSaved).padStart(10)}  (~${formatTokens(hist.allTimeTokensSaved)})  across ${hist.allTimeSessions} session${hist.allTimeSessions !== 1 ? 's' : ''}`
+      );
+    }
+    return histLines.join('\n');
   }
 
   const lines: string[] = [];
@@ -81,11 +93,23 @@ function buildReport(stats: SessionStats): string {
   }
   lines.push('');
 
+  // Historical stats
+  const hist = statsTracker.getHistoricalStats();
+  lines.push('');
+  lines.push('HISTORICAL');
+  lines.push(
+    `  Today      ${formatKB(hist.todayBytesSaved).padStart(10)}  (~${formatTokens(hist.todayTokensSaved)})  across ${hist.todaySessions} session${hist.todaySessions !== 1 ? 's' : ''}`
+  );
+  lines.push(
+    `  All time   ${formatKB(hist.allTimeBytesSaved).padStart(10)}  (~${formatTokens(hist.allTimeTokensSaved)})  across ${hist.allTimeSessions} session${hist.allTimeSessions !== 1 ? 's' : ''}`
+  );
+  lines.push('');
+
   // Status
   const status =
     stats.savingsRatio > 0
-      ? `✓ Working — saved ${formatKB(stats.bytesSaved)} from context window`
-      : '⚠ No savings yet';
+      ? `✓ Working — saved ${formatKB(stats.bytesSaved)} from context window this session`
+      : '⚠ No compressions yet this session';
   lines.push(`STATUS: ${status}`);
 
   return lines.join('\n');
