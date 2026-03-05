@@ -39,10 +39,8 @@ function buildReport(stats: SessionStats): string {
   lines.push('=== context-mode Session Report ===');
   lines.push('');
 
-  // Session header
-  const firstEvent = stats.events[0]!;
-  const lastEvent = stats.events[stats.events.length - 1]!;
-  const duration = formatDuration(firstEvent.timestamp, lastEvent.timestamp);
+  // Session header — duration from server start to now
+  const duration = formatDuration(stats.sessionStart, new Date());
   lines.push(
     `Session: ${duration} | ${stats.totalEvents} compression${stats.totalEvents !== 1 ? 's' : ''}`
   );

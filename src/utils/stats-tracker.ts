@@ -20,10 +20,12 @@ export interface SessionStats {
   tokensSaved: number;
   savingsRatio: number;
   events: CompressionEvent[];
+  sessionStart: Date;
 }
 
 class StatsTracker {
   private events: CompressionEvent[] = [];
+  private readonly sessionStart: Date = new Date();
 
   record(tool: string, inputText: string, outputText: string, strategy: string): CompressionEvent {
     const inputBytes = Buffer.byteLength(inputText, 'utf8');
@@ -64,6 +66,7 @@ class StatsTracker {
       tokensSaved,
       savingsRatio,
       events: [...this.events],
+      sessionStart: this.sessionStart,
     };
   }
 
