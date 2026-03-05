@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-05
+
+### Added
+- `report` MCP tool — shows session savings summary (compressions, KB/tokens saved, per-tool breakdown, savings %)
+- Eclipse IDE adapter via Continue.dev with embedded C++ focus:
+  - Auto-detects `.cproject` (CDT) and `.project` files
+  - Writes MCP entry to `~/.continue/config.json` (merges with existing)
+  - Creates `.context-mode/embedded-cpp-rules.md` with usage examples for cross-compiler output, linker map files, GDB/OpenOCD logs, UART dumps, cppcheck/MISRA, and device headers
+- `report` usage examples added to Copilot, Cursor, and Windsurf setup instructions
+
+## [0.1.3] - 2026-03-04
+
+### Fixed
+- TypeScript strict null checks in `stats-tracker.ts`
+
+## [0.1.2] - 2026-03-04
+
+### Added
+- Session stats tracking via `StatsTracker` utility
+- `compress` tool now records input/output sizes per call
+
+## [0.1.1] - 2026-03-04
+
+### Fixed
+- Minor type fixes in adapter base interface
+
 ## [0.1.0] - 2024-01-15
 
 ### Added

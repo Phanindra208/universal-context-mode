@@ -3,7 +3,7 @@
 > **315 KB becomes 5.4 KB. 98% reduction. Works in every AI IDE.**
 
 An open-source MCP server that compresses tool outputs before they enter the AI context window.
-Built for **Claude Code, Cursor, Windsurf, GitHub Copilot, and any MCP-compatible host.**
+Built for **Claude Code, Cursor, Windsurf, GitHub Copilot, Eclipse, and any MCP-compatible host.**
 
 [![npm version](https://img.shields.io/npm/v/universal-context-mode?color=crimson)](https://www.npmjs.com/package/universal-context-mode)
 [![npm downloads](https://img.shields.io/npm/dm/universal-context-mode)](https://www.npmjs.com/package/universal-context-mode)
@@ -74,7 +74,22 @@ Then **reload VS Code** (`Ctrl+Shift+P` → `Developer: Reload Window`).
 
 ---
 
-### Google Antigravity / Any MCP host
+### Eclipse (Embedded C++)
+
+```bash
+npx -y universal-context-mode setup eclipse
+```
+
+This updates:
+- `~/.continue/config.json` — registers the MCP server for Continue.dev
+- `.context-mode/embedded-cpp-rules.md` — usage examples for cross-compiler output, linker maps, GDB/OpenOCD, UART logs, and static analysis
+
+> Requires [Continue.dev](https://plugins.continuedev.org) plugin and Eclipse 2023-03+ with Java 17+.
+> Install via: **Help → Eclipse Marketplace → search "Continue"**
+
+---
+
+### Any MCP host
 
 Add this to your MCP configuration file:
 
@@ -182,7 +197,7 @@ execute({
 })
 ```
 
-Supports **10 runtimes**. Bun auto-detected for 3–5× faster JS/TS execution.
+Supports **10 runtimes**. Bun auto-detected for 3–5× faster JS/TS execution. Output is compressed before entering context.
 
 ---
 
@@ -269,6 +284,31 @@ The key differentiator for IDEs without `PreToolUse` hooks.
 
 ---
 
+### `report` — Show how much context was saved this session
+
+```javascript
+report()
+```
+
+Returns a savings summary for the current session: total compressions, KB/tokens saved, percentage reduction, and a per-tool breakdown. Use it to verify context-mode is working.
+
+```
+=== context-mode savings report ===
+Session duration : 12m 34s
+Compressions     : 5
+Input            : 423.8 KB  (103,857 tokens)
+Output           : 22.4 KB   ( 5,493 tokens)
+Saved            : 401.4 KB  ( 98,364 tokens) — 94.7%
+
+By tool:
+  execute      : 3 calls   87.2%
+  compress     : 2 calls   98.1%
+
+Status: active — context-mode is working
+```
+
+---
+
 ## Benchmarks
 
 | Content | Input | Output | Saved |
@@ -339,7 +379,7 @@ npm run test:watch
 ```bash
 npx @modelcontextprotocol/inspector node dist/index.js
 # Opens browser UI at http://localhost:5173
-# Call any of the 7 tools interactively
+# Call any of the 8 tools interactively
 ```
 
 ### Point your IDE at your local build
@@ -369,7 +409,7 @@ npm run lint          # ESLint
 npm run lint:fix      # Auto-fix
 npm run format        # Prettier
 npm run build         # tsc compile
-npm test              # vitest (unit + integration, 75 tests)
+npm test              # vitest (unit + integration, 75+ tests)
 npm run test:watch    # Watch mode
 npm run benchmark     # Regenerate BENCHMARK.md
 ```
@@ -385,7 +425,7 @@ src/
 ├── knowledge-base/   ← SQLite BM25 (sql.js, pure WASM — no node-gyp)
 ├── sandbox/          ← Subprocess execution + 10 runtime detectors
 ├── adapters/         ← Add a new IDE adapter here
-├── tools/            ← 7 MCP tool implementations
+├── tools/            ← 8 MCP tool implementations
 └── utils/
 
 tests/
