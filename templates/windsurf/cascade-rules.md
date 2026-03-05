@@ -55,3 +55,6 @@ compress({
   intent: "find error status and error message fields"
 })
 ```
+
+## Savings Report
+Call `context-mode.report` anytime to see total tokens saved and verify context-mode is working.

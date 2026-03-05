@@ -48,6 +48,9 @@ execute_file({ file_path: "package-lock.json", code: "const d=JSON.parse(process
 
 // Compress any large text
 compress({ content: largeOutput, intent: "find error messages" })
+
+// Check how much context was saved this session
+report()
 \`\`\`
 `;
 

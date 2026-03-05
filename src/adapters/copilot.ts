@@ -56,6 +56,12 @@ context-mode.compress({ content: largeText, intent: "find error messages" })
 - find with many results
 - Test suite output
 - API responses
+
+### Check savings report
+Use \`context-mode.report\` anytime to see how much context was saved this session and verify the plugin is working:
+\`\`\`
+context-mode.report()
+\`\`\`
 `;
 
 export class CopilotAdapter implements BaseAdapter {

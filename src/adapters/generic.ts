@@ -3,6 +3,7 @@ import { ClaudeCodeAdapter } from './claude-code.js';
 import { CursorAdapter } from './cursor.js';
 import { WindsurfAdapter } from './windsurf.js';
 import { CopilotAdapter } from './copilot.js';
+import { EclipseAdapter } from './eclipse.js';
 import { type BaseAdapter, type SetupResult } from './base-adapter.js';
 
 const ADAPTERS: BaseAdapter[] = [
@@ -10,6 +11,7 @@ const ADAPTERS: BaseAdapter[] = [
   new CursorAdapter(),
   new WindsurfAdapter(),
   new CopilotAdapter(),
+  new EclipseAdapter(),
 ];
 
 const SERVER_PACKAGE = 'universal-context-mode';
@@ -81,6 +83,7 @@ Manual setup options:
   npx universal-context-mode setup cursor
   npx universal-context-mode setup windsurf
   npx universal-context-mode setup copilot
+  npx universal-context-mode setup eclipse
 
 Or add to any MCP-compatible host with:
   {

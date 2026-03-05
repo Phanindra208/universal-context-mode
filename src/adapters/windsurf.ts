@@ -51,10 +51,13 @@ console.log('Size:', JSON.stringify(d).length, 'chars');\`
 // Documentation lookup
 fetch_and_index({ url: "https://docs.example.com/api", kb_name: "docs" })
 search({ query: "authentication endpoint", kb_name: "docs" })
+
+// Check how much context was saved this session
+report()
 \`\`\`
 
-## Stats
-Run \`execute({ language: "javascript", code: "/* session stats via context-mode */" })\` to see compression stats.
+## Savings Report
+Call \`context-mode.report\` anytime to see total tokens saved and verify context-mode is working.
 `;
 
 export class WindsurfAdapter implements BaseAdapter {
