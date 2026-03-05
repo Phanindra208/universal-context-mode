@@ -13,6 +13,7 @@ import { searchTool } from './tools/search.js';
 import { fetchAndIndexTool } from './tools/fetch-and-index.js';
 import { compressTool } from './tools/compress.js';
 import { proxyTool } from './tools/proxy-tool.js';
+import { reportTool } from './tools/report.js';
 import { statsTracker } from './utils/stats-tracker.js';
 import { logger } from './utils/logger.js';
 
@@ -259,6 +260,19 @@ const TOOLS: Tool[] = [
       required: ['tool', 'args'],
     },
   },
+  {
+    name: 'report',
+    description: [
+      'Show a session savings report: how much context was compressed, tokens saved, and which tools were used.',
+      'Use this to verify context-mode is working and to see the total impact.',
+      'Returns zero-state message if no compressions have happened yet.',
+    ].join(' '),
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 export function createServer(): { server: Server; transport: StdioServerTransport } {
@@ -308,6 +322,9 @@ export function createServer(): { server: Server; transport: StdioServerTranspor
           break;
         case 'proxy':
           result = await proxyTool(typedArgs as Parameters<typeof proxyTool>[0]);
+          break;
+        case 'report':
+          result = reportTool();
           break;
         default:
           throw new Error(`Unknown tool: ${name}`);

@@ -1,0 +1,9 @@
+{
+  "mcpServers": [
+    {
+      "name": "context-mode",
+      "command": "npx",
+      "args": ["-y", "universal-context-mode"]
+    }
+  ]
+}

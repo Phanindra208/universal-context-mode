@@ -20,7 +20,7 @@ describe('MCP Protocol Compliance', () => {
     await client.close();
   });
 
-  it('lists all 7 tools', async () => {
+  it('lists all 8 tools', async () => {
     const { tools } = await client.listTools();
     const names = tools.map(t => t.name);
 
@@ -31,7 +31,8 @@ describe('MCP Protocol Compliance', () => {
     expect(names).toContain('fetch_and_index');
     expect(names).toContain('compress');
     expect(names).toContain('proxy');
-    expect(tools.length).toBe(7);
+    expect(names).toContain('report');
+    expect(tools.length).toBe(8);
   });
 
   it('each tool has required JSON schema', async () => {

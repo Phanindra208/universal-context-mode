@@ -38,3 +38,6 @@ compress({ content: largeOutput, intent: "find error messages" })
 fetch_and_index({ url: "https://docs.example.com" })
 search({ query: "what I need to know" })
 ```
+
+// Check how much context was saved this session
+report()
