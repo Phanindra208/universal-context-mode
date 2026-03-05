@@ -151,7 +151,7 @@ function mergeContinueConfig(
   newEntry: ReturnType<typeof CONTINUE_MCP_ENTRY>
 ): Record<string, unknown> {
   const mcpServers = (existing.mcpServers as Array<Record<string, unknown>>) ?? [];
-  const filtered = mcpServers.filter((s) => s['name'] !== 'context-mode');
+  const filtered = mcpServers.filter(s => s['name'] !== 'context-mode');
   return {
     ...existing,
     mcpServers: [...filtered, newEntry],

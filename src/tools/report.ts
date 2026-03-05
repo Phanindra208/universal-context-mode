@@ -43,14 +43,22 @@ function buildReport(stats: SessionStats): string {
   const firstEvent = stats.events[0]!;
   const lastEvent = stats.events[stats.events.length - 1]!;
   const duration = formatDuration(firstEvent.timestamp, lastEvent.timestamp);
-  lines.push(`Session: ${duration} | ${stats.totalEvents} compression${stats.totalEvents !== 1 ? 's' : ''}`);
+  lines.push(
+    `Session: ${duration} | ${stats.totalEvents} compression${stats.totalEvents !== 1 ? 's' : ''}`
+  );
   lines.push('');
 
   // Savings summary
   lines.push('SAVINGS SUMMARY');
-  lines.push(`  Input:   ${formatKB(stats.totalInputBytes).padStart(10)}  (~${formatTokens(stats.totalInputTokens)})`);
-  lines.push(`  Output:  ${formatKB(stats.totalOutputBytes).padStart(10)}  (~${formatTokens(stats.totalOutputTokens)})`);
-  lines.push(`  Saved:   ${formatKB(stats.bytesSaved).padStart(10)}  (~${formatTokens(stats.tokensSaved)})`);
+  lines.push(
+    `  Input:   ${formatKB(stats.totalInputBytes).padStart(10)}  (~${formatTokens(stats.totalInputTokens)})`
+  );
+  lines.push(
+    `  Output:  ${formatKB(stats.totalOutputBytes).padStart(10)}  (~${formatTokens(stats.totalOutputTokens)})`
+  );
+  lines.push(
+    `  Saved:   ${formatKB(stats.bytesSaved).padStart(10)}  (~${formatTokens(stats.tokensSaved)})`
+  );
   lines.push(`  Ratio:   ${stats.savingsRatio.toFixed(1)}% reduction`);
   lines.push('');
 
@@ -76,9 +84,10 @@ function buildReport(stats: SessionStats): string {
   lines.push('');
 
   // Status
-  const status = stats.savingsRatio > 0
-    ? `✓ Working — saved ${formatKB(stats.bytesSaved)} from context window`
-    : '⚠ No savings yet';
+  const status =
+    stats.savingsRatio > 0
+      ? `✓ Working — saved ${formatKB(stats.bytesSaved)} from context window`
+      : '⚠ No savings yet';
   lines.push(`STATUS: ${status}`);
 
   return lines.join('\n');
