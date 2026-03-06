@@ -313,22 +313,29 @@ The key differentiator for IDEs without `PreToolUse` hooks.
 report()
 ```
 
-Returns a savings summary for the current session plus persistent today/all-time totals. Use it to verify context-mode is working.
+Returns a per-request token tracking summary (input tokens seen, output before→after compression) plus persistent today/all-time totals. Use it to verify context-mode is working.
 
 ```
 === context-mode Session Report ===
 
-Session: 23m | 5 compressions
+Session: 23m | 12 requests | 5 compressions
 
-SAVINGS SUMMARY
-  Input:        45.2 KB  (~11.3K tokens)
-  Output:        8.1 KB  (~2.0K tokens)
+PER-REQUEST TOKEN TRACKING
+  Total requests:  12
+  Input tokens:       148 tokens  (512 B sent to tools)
+  Output tokens:   11.3K tokens → 2.0K tokens (compressed)
+  Net tokens saved: 9.3K tokens
+
+COMPRESSION SAVINGS
+  Before:       45.2 KB  (~11.3K tokens)
+  After:         8.1 KB  (~2.0K tokens)
   Saved:        37.1 KB  (~9.3K tokens)
   Ratio:        82.1% reduction
 
 BY TOOL
   compress         3x    28.4 KB saved  (~7.1K tokens)
   fetch_and_index  2x     8.7 KB saved  (~2.2K tokens)
+
 
 HISTORICAL
   Today      112.3 KB  (~28.1K tokens)  across 4 sessions

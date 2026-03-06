@@ -22,13 +22,17 @@ function formatDuration(start: Date, end: Date): string {
 function buildReport(stats: SessionStats): string {
   if (stats.totalEvents === 0) {
     const hist = statsTracker.getHistoricalStats();
+    const requestLine =
+      stats.totalRequests > 0
+        ? `${stats.totalRequests} request${stats.totalRequests !== 1 ? 's' : ''} tracked (${formatTokens(stats.rawInputTokens)} input tokens seen). Output compression triggers above 5KB.`
+        : 'No requests yet.';
     const histLines = [
       '=== context-mode Report ===',
       '',
-      'No compressions yet in this session.',
+      `No compressions yet in this session. ${requestLine}`,
       '',
       'context-mode is connected and ready.',
-      'It will compress large tool outputs automatically.',
+      'It automatically compresses large tool outputs (>5KB) for all tools.',
       '',
       'Tip: Use context-mode.compress, context-mode.execute, or context-mode.proxy',
       'to start saving context window space.',
@@ -54,17 +58,33 @@ function buildReport(stats: SessionStats): string {
   // Session header — duration from server start to now
   const duration = formatDuration(stats.sessionStart, new Date());
   lines.push(
-    `Session: ${duration} | ${stats.totalEvents} compression${stats.totalEvents !== 1 ? 's' : ''}`
+    `Session: ${duration} | ${stats.totalRequests} request${stats.totalRequests !== 1 ? 's' : ''} | ${stats.totalEvents} compression${stats.totalEvents !== 1 ? 's' : ''}`
   );
   lines.push('');
 
-  // Savings summary
-  lines.push('SAVINGS SUMMARY');
+  // Per-request token tracking (every tool call)
+  lines.push('PER-REQUEST TOKEN TRACKING');
+  lines.push(`  Total requests:  ${stats.totalRequests}`);
   lines.push(
-    `  Input:   ${formatKB(stats.totalInputBytes).padStart(10)}  (~${formatTokens(stats.totalInputTokens)})`
+    `  Input tokens:    ${formatTokens(stats.rawInputTokens).padStart(14)}  (${formatKB(stats.rawInputBytes)} sent to tools)`
+  );
+  if (stats.totalEvents > 0) {
+    const outputBefore = formatTokens(stats.totalInputTokens);
+    const outputAfter = formatTokens(stats.totalOutputTokens);
+    lines.push(`  Output tokens:   ${outputBefore.padStart(14)} → ${outputAfter} (compressed)`);
+    lines.push(`  Net tokens saved: ${formatTokens(stats.tokensSaved)}`);
+  } else {
+    lines.push(`  Output tokens:   (no compressions triggered yet)`);
+  }
+  lines.push('');
+
+  // Savings summary (compressions only)
+  lines.push('COMPRESSION SAVINGS');
+  lines.push(
+    `  Before:  ${formatKB(stats.totalInputBytes).padStart(10)}  (~${formatTokens(stats.totalInputTokens)})`
   );
   lines.push(
-    `  Output:  ${formatKB(stats.totalOutputBytes).padStart(10)}  (~${formatTokens(stats.totalOutputTokens)})`
+    `  After:   ${formatKB(stats.totalOutputBytes).padStart(10)}  (~${formatTokens(stats.totalOutputTokens)})`
   );
   lines.push(
     `  Saved:   ${formatKB(stats.bytesSaved).padStart(10)}  (~${formatTokens(stats.tokensSaved)})`
