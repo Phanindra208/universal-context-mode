@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-03-06
+
+### Added
+- Global output compression middleware — all tools (`search`, `index`, `fetch_and_index`, `proxy`) now auto-compress outputs >5KB, not just `execute`/`execute_file`
+- Input token tracking on every request — `report` now shows total requests, input tokens seen, and output tokens before→after compression
+- `PER-REQUEST TOKEN TRACKING` section in session report with per-request input token counts and net tokens saved
+- `recordRawInput()` method on `StatsTracker` for lightweight per-request input accounting
+
+### Fixed
+- Removed self-referencing `universal-context-mode` from its own `dependencies` (caused install loops on fresh installs)
+
 ## [0.1.6] - 2026-03-05
 
 ### Added

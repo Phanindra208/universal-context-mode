@@ -16,6 +16,11 @@ import { proxyTool } from './tools/proxy-tool.js';
 import { reportTool } from './tools/report.js';
 import { statsTracker } from './utils/stats-tracker.js';
 import { logger } from './utils/logger.js';
+import { compress } from './compression/strategies.js';
+import { DEFAULT_CONFIG } from './config/defaults.js';
+
+// Tools that already compress their own output — skip global middleware for these
+const SELF_COMPRESSING_TOOLS = new Set(['execute', 'execute_file', 'compress', 'report']);
 
 const TOOLS: Tool[] = [
   {
@@ -302,6 +307,10 @@ export function createServer(): { server: Server; transport: StdioServerTranspor
     const { name, arguments: args } = request.params;
     logger.debug('Tool called', { name, args });
 
+    // Track input tokens for every request
+    const inputStr = JSON.stringify(args ?? {});
+    statsTracker.recordRawInput(name, inputStr);
+
     try {
       let result: string;
 
@@ -334,6 +343,22 @@ export function createServer(): { server: Server; transport: StdioServerTranspor
           break;
         default:
           throw new Error(`Unknown tool: ${name}`);
+      }
+
+      // Global output compression for tools that don't self-compress
+      if (
+        !SELF_COMPRESSING_TOOLS.has(name) &&
+        result.length > DEFAULT_CONFIG.compression.thresholdBytes
+      ) {
+        const compressed = compress(result, {
+          maxOutputChars: DEFAULT_CONFIG.compression.maxOutputBytes,
+        });
+        if (compressed.strategy !== 'as-is') {
+          statsTracker.record(name, result, compressed.output, compressed.strategy);
+          result =
+            compressed.output +
+            statsTracker.formatStatsFooter(result, compressed.output, compressed.strategy);
+        }
       }
 
       logger.debug('Tool completed', { name, outputLength: result.length });

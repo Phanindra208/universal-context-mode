@@ -24,6 +24,11 @@ export interface SessionStats {
   savingsRatio: number;
   events: CompressionEvent[];
   sessionStart: Date;
+  // Raw request tracking (every tool call, not just compressions)
+  totalRequests: number;
+  rawInputTokens: number;
+  rawInputBytes: number;
+  rawInputByTool: Record<string, number>;
 }
 
 export interface HistoricalStats {
@@ -78,6 +83,10 @@ class StatsTracker {
   private events: CompressionEvent[] = [];
   private readonly sessionStart: Date = new Date();
   private persisted: PersistedData;
+  private totalRequests: number = 0;
+  private rawInputTokens: number = 0;
+  private rawInputBytes: number = 0;
+  private rawInputByTool: Record<string, number> = {};
 
   constructor() {
     this.persisted = loadPersistedData();
@@ -125,6 +134,15 @@ class StatsTracker {
     return event;
   }
 
+  recordRawInput(tool: string, inputText: string): void {
+    this.totalRequests += 1;
+    const inputBytes = Buffer.byteLength(inputText, 'utf8');
+    const inputTokens = estimateTokens(inputText).tokens;
+    this.rawInputTokens += inputTokens;
+    this.rawInputBytes += inputBytes;
+    this.rawInputByTool[tool] = (this.rawInputByTool[tool] ?? 0) + inputTokens;
+  }
+
   getSessionStats(): SessionStats {
     const totalInputBytes = this.events.reduce((s, e) => s + e.inputBytes, 0);
     const totalOutputBytes = this.events.reduce((s, e) => s + e.outputBytes, 0);
@@ -145,6 +163,10 @@ class StatsTracker {
       savingsRatio,
       events: [...this.events],
       sessionStart: this.sessionStart,
+      totalRequests: this.totalRequests,
+      rawInputTokens: this.rawInputTokens,
+      rawInputBytes: this.rawInputBytes,
+      rawInputByTool: { ...this.rawInputByTool },
     };
   }
 
@@ -173,6 +195,10 @@ class StatsTracker {
 
   reset(): void {
     this.events = [];
+    this.totalRequests = 0;
+    this.rawInputTokens = 0;
+    this.rawInputBytes = 0;
+    this.rawInputByTool = {};
   }
 }
 
