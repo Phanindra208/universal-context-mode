@@ -1,6 +1,6 @@
 {
   "name": "universal-context-mode",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Stop losing context to large outputs — MCP server that compresses tool outputs. Works everywhere: Claude Code, Cursor, Windsurf, Copilot, and any MCP-compatible IDE.",
   "keywords": [
     "mcp",
@@ -13,7 +13,11 @@
     "ai-tools",
     "model-context-protocol"
   ],
-  "author": "phanindra208",
+  "author": {
+    "name": "Phanindra Baddula",
+    "email": "Phanindra208@hotmail.com",
+    "url": "https://phanindra.org/"
+  },
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

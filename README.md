@@ -512,6 +512,15 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
+## Author
+
+**Phanindra Baddula** — Enterprise Solution Architect & AI Solutions Leader  
+- Portfolio: [https://phanindra.org](https://phanindra.org/)
+- LinkedIn: [linkedin.com/in/phanindrabaddula](https://www.linkedin.com/in/phanindrabaddula/)
+- GitHub: [@Phanindra208](https://github.com/Phanindra208)
+
+---
+
 ## Inspired by
 
 [mksglu/claude-context-mode](https://github.com/mksglu/claude-context-mode) — the original Claude Code-specific implementation that inspired this universal version.
